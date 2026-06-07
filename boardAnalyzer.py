@@ -1,4 +1,4 @@
-import cv2 as cv
+import cv2 as cv2
 import numpy as np
 import math
 
@@ -40,173 +40,71 @@ def extractLines(lines):
        
     return lines_horizontal, lines_vertical
 
-img = cv.imread('uploaded_test.jpg')
+img = cv2.imread('uploaded_test.jpg')
 
 # Convert to grayscale
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # Blur the image
-blur = cv.GaussianBlur(gray, (7,7), 0)
+blur = cv2.GaussianBlur(gray, (33,33), 0)
 
-# Use thresh to create contrast between board and background
-thresh = cv.adaptiveThreshold(
-    blur,
-    255,
-    cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-    cv.THRESH_BINARY,
-    81,
-    1
+thresh = cv2.adaptiveThreshold(
+    src = blur,
+    maxValue = 255,
+    adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+    thresholdType=cv2.THRESH_BINARY,
+    blockSize=23,
+    C=2
 )
 
-# Comment to show thresh image
-# cv.imshow('Thresh', thresh)
 
-# Find contours
-contours, hierarchy = cv.findContours(thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
 
-foundBorder = []
 
-# Traverse each contour
-for contour in contours:
-    peri = cv.arcLength(contour, True)
-    approx = cv.approxPolyDP(contour, 0.02 * peri, True)
+cv2.imshow("Dilated", thresh)
+
+contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+
+height, width, _ = img.shape
+quadrilaterals = []
+image_vertices = np.array([
+    [0, 0],
+    [width - 1, 0],
+    [width - 1, height - 1],
+    [0, height - 1]
+], dtype=np.float32)
+print(image_vertices)
+
+for c in contours:
+    hull = cv2.convexHull(c)
+
+    peri = cv2.arcLength(hull, True)
+    approx = cv2.approxPolyDP(hull, 0.02 * peri, True)
+
     
     
-    area = cv.contourArea(contour)
-    # Skip small contours
-    if area < 10000:
+    area = cv2.contourArea(approx)
+    if area < 10000 or len(approx) != 4:
         continue
     
-    # If we have four vertices (quadrilateral)
-    if len(approx) == 4:
-      
-        x, y, w, h = cv.boundingRect(approx)
-        img_h, img_w = img.shape[:2]
-        margin = 10
-        
-        # Skip anything that might be the border of our photo
-        if (
-            x <= margin or
-            y <= margin or
-            x + w >= img_w - margin or
-            y + h >= img_h - margin
-        ):
-            continue
-
-        aspect_ratio = float(w) / h
-
-        # Draw the contour
-        cv.drawContours(img, [approx], -1, (0, 255, 0), 2)
-        foundBorder.append(approx)
-
-
-if len(foundBorder) == 1:
-    border = foundBorder[0]
-    border = border.reshape(4,2)
-    
-    orderedBorder = orderVertices(border)
-    
-    board_size = 800
-    
-    
-    dst = np.array([
-        [0,0],
-        [board_size - 1, 0],
-        [board_size - 1, board_size - 1],
-        [0, board_size - 1]
-    ], dtype=np.float32)
-
-    # Warp onto the found border
-    M = cv.getPerspectiveTransform(orderedBorder, dst)
-
-    warped = cv.warpPerspective(img, M, (board_size, board_size))
-
-    # Now we repeat to find inner board (8x8 grid)
-    gray = cv.cvtColor(warped, cv.COLOR_BGR2GRAY)
-    blur = cv.GaussianBlur(gray, (5,5), 0)
-    
-    cv.imshow('Blur', blur)
-
-    edges = cv.Canny(blur, threshold1=10, threshold2=30)
-    lines = cv.HoughLinesP(edges, rho=1, theta=np.pi/180, threshold=150, minLineLength=50, maxLineGap=100)
-
-    horizontal, vertical = extractLines(lines)
-
-    sorted_vertical = sorted(vertical, key=lambda line: line[0][0])
-    merged_vertical = []
-
-    for line in sorted_vertical:
-        if not merged_vertical:
-            merged_vertical.append(line)
-        elif abs(line[0][0] - merged_vertical[-1][0][0]) > 25:
-            merged_vertical.append(line)
+    reshaped = np.reshape(approx, (4, -1))
+    reshaped = orderVertices(reshaped)
+    if (np.array_equal(reshaped, image_vertices)):
+        continue
     
 
-    sorted_horizontal = sorted(horizontal, key=lambda line: line[0][1])
-    merged_horizontal = []
-
-    for line in sorted_horizontal:
-        if not merged_horizontal:
-            merged_horizontal.append(line)
-        elif abs(line[0][1] - merged_horizontal[-1][0][1]) > 25:
-            merged_horizontal.append(line)
-    
-    
-    #reset here
-    horizontal = merged_horizontal
-    vertical = merged_vertical
-
-    #now get the ys of the horizontal lines
-    ys = []
-    for line in horizontal:
-        ys.append((line[0][1] + line[0][3]) / 2)
-    
-    diff = np.diff(ys)
-    median = np.median(diff)
-    evenlySpaced = []
-    test = []
-    for i, lineDiff in enumerate(diff):
-        if abs(lineDiff - median) < 10:
-            test.append(lineDiff)
-            evenlySpaced.append(horizontal[i])
-    
-    horizontal = evenlySpaced
-   
-    #now get the ys of the horizontal lines
-    xs = []
-    for line in vertical:
-        xs.append((line[0][0] + line[0][2]) / 2)
-    
-    diff = np.diff(xs)
-    median = np.median(diff)
-    evenlySpaced = []
-    test = []
-    for i, lineDiff in enumerate(diff):
-        if abs(lineDiff - median) < 15:
-            evenlySpaced.append(vertical[i])
-    
-    vertical = evenlySpaced
-    
-    print(len(vertical))
-    print(len(horizontal))
-
-    # Draw the lines
-    if lines is not None:
-        for line in vertical:
-            x1, y1, x2, y2 = line[0]
-            cv.line(warped, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        for line in horizontal:
-            x1, y1, x2, y2 = line[0]
-            cv.line(warped, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        
-
-    
-    
-    cv.imshow('BoardView', warped)
-    
+    if len(approx) == 4 and cv2.isContourConvex(approx):
+        quadrilaterals.append(reshaped)
 
 
 
-# cv.imshow("Image", img)
+if len(quadrilaterals) == 1:
+    board = quadrilaterals[0]
+    matrix = cv2.getPerspectiveTransform(board, image_vertices)
+    
+    refocused = cv2.warpPerspective(img, matrix, (width, height))
+    cv2.imshow("Refocused", refocused)
 
-cv.waitKey(0)
+cv2.imshow("Contour Image", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
