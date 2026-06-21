@@ -1,6 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 import shutil
 import uvicorn
+import boardAnalyzer
+
 
 
 app = FastAPI()
@@ -19,6 +21,7 @@ async def recieve_photo(file: UploadFile = File(...)):
 	with open(file_location, "wb+") as file_object:
 		shutil.copyfileobj(file.file, file_object)
 
+	boardAnalyzer.analyze_photo()
 	return {"info": f"File '{file.filename}' saved at '{file_location}'"}
 
 
