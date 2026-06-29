@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-
-# prerequisites: as described in https://alphacephei.com/vosk/install and also python module `sounddevice` (simply run command `pip install sounddevice`)
-# Example usage using Dutch (nl) recognition model: `python test_microphone.py -m nl`
-# For more help run: `python test_microphone.py -h`
-
 import argparse
 import json
 import queue
@@ -24,7 +18,7 @@ pictureTakingPhrases = ["Take a picture", "Capture a photo", "Get a snapshot", "
 keyPhrases = ["Initialize Board", "Update Position"]
 
 phrase_embeddings = embeddingModel.encode(pictureTakingPhrases)
-
+keyPhrase_embeddings = embeddingModel.encode(keyPhrases)
 
 def evaluate(sentence):
     embedding = embeddingModel.encode([sentence])
@@ -33,9 +27,15 @@ def evaluate(sentence):
     return np.max(similarities)
 
 def getClosestPhrase(sentence):
-    embedding = embeddingModel.encode([sentence]
+    embedding = embeddingModel.encode([sentence])
     
-    )
+    similarities = cosine_similarity(embedding, keyPhrase_embeddings)[0]
+    max_similarity = np.max(similarities)
+    if (max_similarity > .6):
+        return keyPhrases[np.argmax(similarities)]
+    else:
+        return None
+    
 
 def int_or_str(text):
     """Helper function for argument parsing."""
@@ -104,12 +104,19 @@ try:
                 voiceInput = res["text"]
                 print(voiceInput)
                 evaluation = evaluate(voiceInput)
-                print(evaluation)
 
-                if evaluation > .6:
+                closestPhrase = getClosestPhrase(voiceInput)
+                print(closestPhrase)
+
+                if (closestPhrase == "Initialize Board"):
                     cameraHandler.capture_photo()
-                    requestHandler.send_image()
-                    
+                    print("Sending!")
+                    requestHandler.initialize_board()
+                elif (closestPhrase == "Update Position"):
+                    cameraHandler.capture_photo()
+                    print("Sending!")
+                    requestHandler.update_position()
+                
 
             # else:
             #     print(rec.PartialResult())
