@@ -1,13 +1,11 @@
 import cv2 as cv2
 import numpy as np
-import math
 import os
 import pieceDetection
 
 output_folder = "photos"
 
-def analyze_photo():
-
+def get_board_map():
     #return an array storing top left, top right, bottom right, bottom left in order
     def orderVertices(border):
         pointSums = np.sum(border, axis=1)
@@ -21,51 +19,7 @@ def analyze_photo():
 
         return np.array([topLeft, topRight, bottomRight, bottomLeft], dtype=np.float32)
 
-    #split lines into horizontal and vertical groups
-    def extractLines(lines):
-        threshold_angle =  2.5 * (np.pi / 180) 
-        lines_horizontal = []
-        lines_vertical = []
-        for line in lines:
-            
-            
-            x1, y1, x2, y2 = line[0]
-            
-            # Calculate angle in radians
-            angle = math.atan2(y2 - y1, x2 - x1)
-            
-            # Normalize angle to be between 0 and pi
-            if angle < 0:
-                angle += np.pi
-                
-            # Classify
-            if angle < threshold_angle or abs(angle - np.pi) < threshold_angle:
-                lines_horizontal.append(line)
-            elif abs(angle - (np.pi / 2)) < threshold_angle:
-                lines_vertical.append(line)
-            
-        
-        return lines_horizontal, lines_vertical
-
-    def mergeLines(lines, horizontal = False, vertical = False):
-        if (horizontal):
-            lines = sorted(lines, key = lambda line: line[0][1])
-            cleaned = []
-            for line in lines:
-                if not cleaned:
-                    cleaned.append(line)
-                elif abs(cleaned[-1][0][1] - line[0][1]) > 20:
-                    cleaned.append(line)
-            return cleaned
-        if (vertical):
-            lines = sorted(lines, key = lambda line: line[0][0])
-            cleaned = []
-            for line in lines:
-                if not cleaned:
-                    cleaned.append(line)
-                elif abs(cleaned[-1][0][0] - line[0][0]) > 20:
-                    cleaned.append(line)
-            return cleaned   
+   
     def approxEqual(matrix1, matrix2):
         count = 0
         for i in range(len(matrix1)):
@@ -89,17 +43,17 @@ def analyze_photo():
         maxValue = 255,
         adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         thresholdType=cv2.THRESH_BINARY,
-        blockSize=23,
+        blockSize=33,
         C=2
     )
 
 
-
-
     # cv2.imshow("Dilated", thresh)
+
 
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+    # cv2.drawContours(img, contours, -1, (0, 255, 0), 2)
 
     height, width, _ = img.shape
     quadrilaterals = []
@@ -116,26 +70,34 @@ def analyze_photo():
 
         peri = cv2.arcLength(hull, True)
         approx = cv2.approxPolyDP(hull, 0.02 * peri, True)
+        x, y, w, h = cv2.boundingRect(approx)
 
-    
 
-        
+
         area = cv2.contourArea(approx)
         if area < 1000 or len(approx) != 4:
             continue
+        if (w / h) < .95 or (w / h) > 1.05:
+            continue
+
+
+
         
         reshaped = np.reshape(approx, (4, -1))
         reshaped = orderVertices(reshaped)
         if (np.array_equal(reshaped, image_vertices)):
             continue
         
-        print(len(approx))
         
 
         if len(approx) == 4 and not approxEqual(reshaped, image_vertices):
             quadrilaterals.append(reshaped)
+            # cv2.drawContours(img, [approx], -1, (255, 0, 0), 2)
 
+    # cv2.imshow("Image", img)
+    # cv2.waitKey(0)
 
+    
 
     if len(quadrilaterals) > 0:
         board = quadrilaterals[0]
@@ -176,15 +138,15 @@ def analyze_photo():
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         success = cv2.imwrite(full_path, refocused)
-        
-        pieceDetection.detect_pieces(f"{output_folder}/{file_name}")
+
+        return pieceDetection.detect_pieces(f"{output_folder}/{file_name}")
 
 
     else:
         print("No board detected!")
+        return {}
 
 
 
-# # cv2.imshow("Image", img)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+
+# get_board_map()
