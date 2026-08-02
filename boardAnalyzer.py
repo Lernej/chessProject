@@ -5,7 +5,10 @@ import pieceDetection
 
 output_folder = "photos"
 
-def get_board_map():
+# Overall function to be called from the API. Return a map of square to piece.
+def get_board_map(path):
+    
+    
     #return an array storing top left, top right, bottom right, bottom left in order
     def orderVertices(border):
         pointSums = np.sum(border, axis=1)
@@ -19,7 +22,7 @@ def get_board_map():
 
         return np.array([topLeft, topRight, bottomRight, bottomLeft], dtype=np.float32)
 
-   
+    # Check if two matrixes are approximately equal (will be used to filter out image edge contour)
     def approxEqual(matrix1, matrix2):
         count = 0
         for i in range(len(matrix1)):
@@ -30,7 +33,9 @@ def get_board_map():
                     count += 1
                     break
         return count == len(matrix1)
-    img = cv2.imread('uploaded_test.jpg')
+    
+    
+    img = cv2.imread(path)
 
     # Convert to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -98,7 +103,7 @@ def get_board_map():
     # cv2.waitKey(0)
 
     
-
+    # Assumes the first quadrilateral we find is the board
     if len(quadrilaterals) > 0:
         board = quadrilaterals[0]
         matrix = cv2.getPerspectiveTransform(board, image_vertices)
@@ -106,30 +111,6 @@ def get_board_map():
         refocused = cv2.warpPerspective(img, matrix, (width, height))
 
         gray = cv2.cvtColor(refocused, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (7, 7), 0)
-
-        clahe = cv2.createCLAHE(clipLimit = 2.0, tileGridSize=(8,8))
-
-        
-
-        cl_img = clahe.apply(blur)
-
-        # cv2.imshow("CLAHE", cl_img)
-
-        edges = cv2.Canny(cl_img, 30, 100)
-
-        # cv2.imshow("edges", edges)
-
-        # 4. Extract straight lines using Probabilistic Hough Transform
-        lines = cv2.HoughLinesP(
-            edges, 
-            rho=1, 
-            theta=np.pi/180, 
-            threshold=65, 
-            minLineLength=400, 
-            maxLineGap=100
-        )
-
         
         # cv2.imshow("Refocused", refocused)
         file_name = "board.jpg"

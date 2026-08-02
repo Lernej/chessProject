@@ -31,6 +31,7 @@ def detect_pieces(image_file):
 
 	square_piece_map = {}
 
+	# Traverse detected pieces and create a map (square -> piece)
 	for xyxy, confidence, class_name in zip(detections.xyxy, detections.confidence, detections.data['class_name']):
 		x_min, y_min, x_max, y_max = xyxy
 

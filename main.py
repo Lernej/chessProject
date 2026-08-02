@@ -28,7 +28,7 @@ async def recieve_photo(file: UploadFile = File(...)):
 	with open(file_location, "wb+") as file_object:
 		shutil.copyfileobj(file.file, file_object)
 
-	boardAnalyzer.get_board_map()
+	boardAnalyzer.get_board_map(file_location)
 	return {"info": f"File '{file.filename}' saved at '{file_location}'"}
 
 @app.post("/initialize")
@@ -41,7 +41,7 @@ async def initialize(file: UploadFile = File(...)):
 	with open(file_location, "wb+") as file_object:
 		shutil.copyfileobj(file.file, file_object)
 
-	map = boardAnalyzer.get_board_map()
+	map = boardAnalyzer.get_board_map(file_location)
 	
 	files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 	ranks = ['1', '2', '7', '8']
@@ -71,7 +71,7 @@ async def update_position(file: UploadFile = File(...)):
 	with open(file_location, "wb+") as file_object:
 		shutil.copyfileobj(file.file, file_object)
 
-	map = boardAnalyzer.get_board_map()
+	map = boardAnalyzer.get_board_map(file_location)
 	prev = GAME_STATE["last_piece_map"]
 	board = GAME_STATE["board"]
 
@@ -175,8 +175,6 @@ async def best_move():
 		return {"message": f"The best move in this position is {result.move}"}
 
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 
 
 @app.get("/analyze_position")
