@@ -18,19 +18,6 @@ stockfish_exe = "stockfish/stockfish.exe"
 async def root():
 	return {"message" : "Hello World!"}
 
-@app.post("/photo")
-async def recieve_photo(file: UploadFile = File(...)):
-	if file.content_type not in ["image/jpeg", "image/jpg"]:
-		raise HTTPException(status_code=400, detail="File must be a JPEG image")
-	
-	file_location = f"uploaded_{file.filename}"
-
-	with open(file_location, "wb+") as file_object:
-		shutil.copyfileobj(file.file, file_object)
-
-	boardAnalyzer.get_board_map(file_location)
-	return {"info": f"File '{file.filename}' saved at '{file_location}'"}
-
 @app.post("/initialize")
 async def initialize(file: UploadFile = File(...)):
 	if file.content_type not in ["image/jpeg", "image/jpg"]:
