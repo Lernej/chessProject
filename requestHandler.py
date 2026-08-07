@@ -1,7 +1,24 @@
 import requests
+import numpy as np
+import sounddevice as sd
+from piper import PiperVoice
+from playsound3 import playsound
+
 
 url = "http://192.168.1.83:8000"
 file_path = "test.jpg"
+
+model_path = "voice-models/en_US-arctic-medium.onnx"
+voice = PiperVoice.load(model_path)
+output_path = "speech-output/output.wav"
+
+
+def speak(message):
+	for chunk in voice.synthesize(message):
+		audio_data = np.frombuffer(chunk.audio_int16_bytes, dtype = np.int16)
+
+		sd.play(audio_data, samplerate =22050)
+		sd.wait()
 
 def test_route():
 	response = requests.get(url + "/")
@@ -20,7 +37,10 @@ def initialize_board():
 		files = {'file': (file_path, f, 'image/jpeg')}
 		response = requests.post(url + "/initialize", files = files)
 
-	print(response.json())
+	json = response.json()
+	message = json.get("message", "An error occured, please try again")
+	speak(message)
+
 
 
 
@@ -29,4 +49,28 @@ def update_position():
 		files = {'file': (file_path, f, 'image/jpeg')}
 		response = requests.post(url + "/update_position", files = files)
 
-	print(response.json())
+	json = response.json()
+	message = json.get("message", "An error occured, please try again")
+	
+	if (message == "Success"):
+		playsound("audio-output/success.mp3")
+	else:
+		speak(message)
+
+def get_best_move():
+	response = requests.get(url + "/best_move")
+
+	json = response.json()
+
+	message = json.get("message", "An error occured, please try again")
+	speak(message)	
+
+def analyze_board():
+	response = requests.get(url + "/analyze_position")
+
+	json = response.json()
+
+	message = json.get("message", "An error occured, please try again")
+	speak(message)	
+
+

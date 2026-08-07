@@ -15,7 +15,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 q = queue.Queue()
 embeddingModel = SentenceTransformer('all-MiniLM-L6-v2')
 pictureTakingPhrases = ["Take a picture", "Capture a photo", "Get a snapshot", "Shoot a photo", "Snap an Image", "Get a snapshot", "Please take a picture", "Please get a photo"]
-keyPhrases = ["Initialize Board", "Update Position"]
+keyPhrases = ["Initialize Board", "Update Position", "Update", "What is the best move here", "Best Move", "What is the best move", "Who is winning", "Who is winning here", "Who is winning in this position"]
+bestMovePhrases = ["What is the best move here", "Best Move", "What is the best move"]
+whoWinningPhrases = ["Who is winning", "Who is winning here", "Who is winning in this position"]
 
 phrase_embeddings = embeddingModel.encode(pictureTakingPhrases)
 keyPhrase_embeddings = embeddingModel.encode(keyPhrases)
@@ -112,10 +114,15 @@ try:
                     cameraHandler.capture_photo()
                     print("Sending!")
                     requestHandler.initialize_board()
-                elif (closestPhrase == "Update Position"):
+                elif (closestPhrase == "Update Position" or closestPhrase == "Update"):
                     cameraHandler.capture_photo()
                     print("Sending!")
                     requestHandler.update_position()
+                elif closestPhrase in bestMovePhrases:
+                    requestHandler.get_best_move()
+                elif closestPhrase in whoWinningPhrases:
+                    print("Sending request!")
+                    requestHandler.analyze_board()
                 
 
             # else:
