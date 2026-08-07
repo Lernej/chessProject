@@ -8,9 +8,9 @@ from playsound3 import playsound
 url = "http://192.168.1.83:8000"
 file_path = "test.jpg"
 
-model_path = "voice-models/en_US-arctic-medium.onnx"
+model_path = "pi/voice-models/en_US-arctic-medium.onnx"
 voice = PiperVoice.load(model_path)
-output_path = "speech-output/output.wav"
+
 
 
 def speak(message):

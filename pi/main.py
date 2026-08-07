@@ -3,9 +3,9 @@ import json
 import queue
 import sys
 import sounddevice as sd
-import cameraHandler
+import cameraHandler as cameraHandler
 import numpy as np
-import requestHandler
+import requestHandler as requestHandler
 
 from sentence_transformers import SentenceTransformer, util
 from vosk import Model, KaldiRecognizer
