@@ -5,3 +5,5 @@ list
 /api/stockfish
 photos/
 uploaded_*.jpg
+pi/vosk-model-small-en-us-0.15
+voice-models/
