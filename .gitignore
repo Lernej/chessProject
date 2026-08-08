@@ -2,4 +2,6 @@
 __pycache__
 0
 list
-/stockfish
+/api/stockfish
+photos/
+uploaded_*.jpg
