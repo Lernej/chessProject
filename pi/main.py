@@ -110,19 +110,24 @@ try:
                 closestPhrase = getClosestPhrase(voiceInput)
                 print(closestPhrase)
 
-                if (closestPhrase == "Initialize Board"):
-                    cameraHandler.capture_photo()
-                    print("Sending!")
-                    requestHandler.initialize_board()
-                elif (closestPhrase == "Update Position" or closestPhrase == "Update"):
-                    cameraHandler.capture_photo()
-                    print("Sending!")
-                    requestHandler.update_position()
-                elif closestPhrase in bestMovePhrases:
-                    requestHandler.get_best_move()
-                elif closestPhrase in whoWinningPhrases:
-                    print("Sending request!")
-                    requestHandler.analyze_board()
+                # Keep listening even if one command fails, so a bad capture or
+                # a dropped request doesn't end the session
+                try:
+                    if (closestPhrase == "Initialize Board"):
+                        cameraHandler.capture_photo()
+                        print("Sending!")
+                        requestHandler.initialize_board()
+                    elif (closestPhrase == "Update Position" or closestPhrase == "Update"):
+                        cameraHandler.capture_photo()
+                        print("Sending!")
+                        requestHandler.update_position()
+                    elif closestPhrase in bestMovePhrases:
+                        requestHandler.get_best_move()
+                    elif closestPhrase in whoWinningPhrases:
+                        print("Sending request!")
+                        requestHandler.analyze_board()
+                except Exception as e:
+                    print(f"Command '{closestPhrase}' failed: {type(e).__name__}: {e}")
                 
 
             # else:

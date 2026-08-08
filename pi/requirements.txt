@@ -1,0 +1,29 @@
+# Raspberry Pi client dependencies.
+#
+# picamera2 is intentionally NOT listed here. On Raspberry Pi OS it ships as a
+# system package and should be installed with apt, not pip:
+#     sudo apt install -y python3-picamera2
+# If you use a virtualenv, create it with --system-site-packages so picamera2
+# stays visible:
+#     python3 -m venv --system-site-packages .venv
+#
+# Versions are left unpinned because these were not captured from the working
+# Pi environment. Run `pip freeze > requirements.txt` on the Pi to pin them.
+
+# Voice input (speech recognition) and intent matching
+vosk
+sounddevice
+sentence-transformers
+scikit-learn
+
+# Voice output
+piper-tts
+playsound3
+
+# MJPEG preview stream + image handling
+flask
+opencv-python
+numpy
+
+# Talking to the API
+requests

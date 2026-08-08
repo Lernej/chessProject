@@ -90,7 +90,12 @@ async def update_position(file: UploadFile = File(...)):
 		
 		# Here, we check if we are promoting
 		squareIdx = chess.parse_square(square1)
-		if board.piece_at(squareIdx).piece_type == chess.PAWN:
+		piece = board.piece_at(squareIdx)
+		# The detected board and our tracked board have diverged
+		if piece is None:
+			return {"message" : "Board state is out of sync, please initialize the board again!"}
+
+		if piece.piece_type == chess.PAWN:
 			if board.turn == chess.WHITE:
 				if '7' in square1 and '8' in square2:
 					moveStr = moveStr + "q"
@@ -114,6 +119,9 @@ async def update_position(file: UploadFile = File(...)):
 		for square in oldSquares:
 			squareIdx = chess.parse_square(square)
 			piece = board.piece_at(squareIdx)
+			# The detected board and our tracked board have diverged
+			if piece is None:
+				return {"message" : "Board state is out of sync, please initialize the board again!"}
 			piecesMoved.append(piece.piece_type)
 
 		if chess.KING in piecesMoved and chess.ROOK in piecesMoved:
