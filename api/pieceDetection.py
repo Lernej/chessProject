@@ -31,7 +31,9 @@ def detect_pieces(image_file):
 
 	square_piece_map = {}
 
-	# Traverse detected pieces and create a map (square -> piece)
+	# Traverse detected pieces and create a map (square -> piece). The model
+	# only reports colour, so class_name is "white_piece" or "black_piece" --
+	# piece identity comes from the board state tracked in main.py.
 	for xyxy, confidence, class_name in zip(detections.xyxy, detections.confidence, detections.data['class_name']):
 		x_min, y_min, x_max, y_max = xyxy
 
@@ -47,34 +49,4 @@ def detect_pieces(image_file):
 	
 	
 	return square_piece_map
-
-	#For testing. X represents black pieces, O represents white pieces.
-	# files = ['h','g','f','e','d','c','b','a']
-	# ranks = ['1', '2', '3', '4', '5', '6', '7', '8']
-
-	# board = [["X" for _ in range(8)] for _ in range (8)]
-
-	# for i in range(8):
-	# 	for j in range(8):
-	# 		square = files[i] + ranks[j]
-	# 		if square in square_piece_map:
-	# 			piece = square_piece_map[square]
-	# 			if piece == "white_piece":
-	# 				board[j][i] = "O"
-	# 			elif piece == "black_piece":
-	# 				board[j][i] = "X"
-	# 		else:
-	# 			board[j][i] = "-"
-		
-
-
-	# for i in range(8):
-	# 	string = ""
-	# 	for j in range(8):
-	# 		string += board[i][j] + " "
-	# 	print(string)
-
-# # Uncomment for testing
-# detect_pieces("photos/board.jpg")
-		
 

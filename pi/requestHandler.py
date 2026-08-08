@@ -1,3 +1,4 @@
+import os
 import requests
 import numpy as np
 import sounddevice as sd
@@ -5,7 +6,9 @@ from piper import PiperVoice
 from playsound3 import playsound
 
 
-url = "http://192.168.1.83:8000"
+# Address of the machine running the API. Override with CHESS_API_URL rather
+# than editing this default.
+url = os.environ.get("CHESS_API_URL", "http://192.168.1.83:8000")
 file_path = "test.jpg"
 
 # Seconds to wait on the API before giving up. Stockfish gets a second per
