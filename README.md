@@ -169,3 +169,6 @@ loses the position.
   hardcoding them, removing the fixed-camera assumption
 - Handle en passant by treating "two emptied, one changed" as a capture candidate
 - Persist game state so the API can restart mid-game
+
+
+**Disclaimer:** This README was drafted with the assistance of Claude.
