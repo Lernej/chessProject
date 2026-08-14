@@ -143,9 +143,8 @@ occupancy-and-colour detector and change the model ID in
 - Board detection was only ever tested against a single floor surface. It picks
   the first square-ish quadrilateral it finds, so a busy background can defeat it.
 - `boardGrid.py` hardcodes pixel bounds (`x_start=30, x_end=610, y_start=30,
-  y_end=465`) and a fixed file order. These describe one specific camera mount
-  and viewing side; move the camera and both must be re-measured.
-- Only one physical board and piece set was ever used.
+  y_end=465`) and a fixed file order. These bounds work for the particular board used
+  during testing, but a different board may require different bounds.
 
 **Chess rules are incompletely handled.**
 
