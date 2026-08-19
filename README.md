@@ -134,7 +134,7 @@ and the Raspberry Pi 5. As such, there are some limitations, many of which I int
 
 **The Roboflow model is private.** `chess-project-9lzcy/1` lives in my Roboflow
 workspace, so cloning this repo and supplying your own API key is *not* enough
-to run the vision pipeline — you would need to train an equivalent
+to run the vision pipeline. You would need to train an equivalent
 occupancy-and-colour detector and change the model ID in
 `api/pieceDetection.py`.
 
@@ -150,12 +150,12 @@ occupancy-and-colour detector and change the model ID in
 
 - **En passant is currently not supported.** It produces two emptied squares and one
   changed square, which matches neither the normal-move nor the castling branch,
-  so the move is rejected. The game state stays consistent — you simply cannot
-  play it.
+  so the move is rejected.
 - Promotion always assumes a queen.
 - `/initialize` checks that ranks 1, 2, 7 and 8 are occupied, but not that the
-  colours are on the expected sides — a board set up 180° from what
-  `boardGrid.py` expects will initialize successfully and then misread every move.
+  colours are on the expected sides. A board set up 180° from what
+  `boardGrid.py` expects will initialize successfully and then misread every move. **This is the most critical missing feature
+  at the moment.**
 - Castling that is detected but whose destination is not a `g` or `c` file falls
   through to a generic error rather than reporting the specific problem.
 
