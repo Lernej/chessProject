@@ -1,9 +1,9 @@
 # Chess Vision Assistant
 
-A voice-controlled chess assistant built over one summer. A Raspberry Pi with a
-camera watches a physical chess board. You speak a command; the Pi photographs
-the board, sends the image to an API on a laptop, and speaks the answer back —
-what the best move is, or who is winning.
+A voice-controlled chess assistant built over one summer. When playing chess,
+hold up a Pi 5 with a camera module pointed at the board and send an update to 
+an API via voice commands. The Pi will update you with the best move and an analysis
+of the position.
 
 ```
 ┌─────────────────────────┐         ┌──────────────────────────────────────┐
@@ -18,7 +18,7 @@ what the best move is, or who is winning.
 
 ## The core idea
 
-The vision model **only detects occupancy and colour** — it reports
+The vision model **only detects occupancy and colour.** It reports
 `white_piece` or `black_piece`, never "knight" or "rook". Piece identity is
 never seen by the camera at all. Instead it lives in a `python-chess` board that
 the API maintains, and moves are inferred by diffing successive photographs:
@@ -62,8 +62,8 @@ speak any response verbatim.
 ## Voice commands
 
 Speech is transcribed by Vosk, then matched against known phrases by cosine
-similarity over MiniLM sentence embeddings (threshold 0.6) — so wording does not
-have to be exact.
+similarity over MiniLM sentence embeddings (threshold 0.6). This means
+wording will not have to be exact for commands to be registered.
 
 | Say | Does |
 | --- | --- |
@@ -84,8 +84,8 @@ Three assets are **not** in this repository and must be downloaded separately.
 | Vosk model (small en-us) | `pi/vosk-model-small-en-us-0.15/` | [alphacephei.com/vosk/models](https://alphacephei.com/vosk/models) |
 | Piper voice | `pi/voice-models/en_US-arctic-medium.onnx` | [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices) |
 
-Unzip the Vosk model so that `am/`, `conf/` and `graph/` sit directly inside
-`pi/vosk-model-small-en-us-0.15/` — not nested in a second folder of the same
+Unzip the Vosk model so that `am/`, `conf/` and `graph/` are directly inside
+`pi/vosk-model-small-en-us-0.15/`,  not nested in a second folder of the same
 name.
 
 ### API server
@@ -96,7 +96,7 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt
 ```
 
-Set your Roboflow key, then run **from inside `api/`** — the Stockfish and
+Set your Roboflow key, then run **from inside `api/`.** The Stockfish and
 output paths are relative to the working directory:
 
 ```bash
@@ -129,8 +129,8 @@ camera.
 
 ## Known limitations
 
-This was a learning project — first time using Roboflow, Raspberry Pi, and
-FastAPI. It worked end to end on my desk, and the constraints below are real.
+This project was made with the intention of learning how to use Roboflow, OpenCV,
+and the Raspberry Pi 5. As such, there are some limitations, many of which I intend to fix in the future.
 
 **The Roboflow model is private.** `chess-project-9lzcy/1` lives in my Roboflow
 workspace, so cloning this repo and supplying your own API key is *not* enough
@@ -148,7 +148,7 @@ occupancy-and-colour detector and change the model ID in
 
 **Chess rules are incompletely handled.**
 
-- **En passant is not supported.** It produces two emptied squares and one
+- **En passant is currently not supported.** It produces two emptied squares and one
   changed square, which matches neither the normal-move nor the castling branch,
   so the move is rejected. The game state stays consistent — you simply cannot
   play it.
@@ -165,10 +165,8 @@ loses the position.
 ## Possible next steps
 
 - Publish the detection model so the project is reproducible
-- Derive `boardGrid.py`'s bounds from the detected board corners instead of
-  hardcoding them, removing the fixed-camera assumption
 - Handle en passant by treating "two emptied, one changed" as a capture candidate
 - Persist game state so the API can restart mid-game
 
 
-**Disclaimer:** This README was drafted with the assistance of Claude.
+**Disclaimer:** I used Claude code for polishing the repository/drafting the README.
